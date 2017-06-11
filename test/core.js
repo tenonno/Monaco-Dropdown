@@ -1,4 +1,4 @@
-const value = `
+let value = `
 
 /*▼🍣*/(null)
 /*▼🍣*/(null)
@@ -17,8 +17,11 @@ function x() {
 `;
 
 
+value = `
 
+/*▼test*/(null)
 
+`;
 
 require.config({
     paths: {
@@ -36,7 +39,7 @@ require.config({
 });
 
 
-require(['vs/editor/editor.main'], function() {
+require(['vs/editor/editor.main'], () => {
 
     const editor = monaco.editor.create(document.getElementById('container'), {
         value: value,
@@ -47,8 +50,6 @@ require(['vs/editor/editor.main'], function() {
 
 
     });
-
-
 
 
 
@@ -101,6 +102,23 @@ require(['vs/editor/editor.main'], function() {
 
 
             console.info('range', this.range);
+            console.info(editor.getOffsetForColumn);
+
+            console.info('width',
+                editor.getOffsetForColumn(this.range.endLineNumber, this.range.endColumn) -
+                editor.getOffsetForColumn(this.range.startLineNumber, this.range.startColumn)
+            );
+
+
+
+
+            Math.round = (e) => e;
+
+            for (let i = 0; i < this.w.length - 1; ++i) {
+                console.log(
+                    editor.getOffsetForColumn(this.range.startLineNumber, this.range.startColumn + i + 1) -
+                    editor.getOffsetForColumn(this.range.startLineNumber, this.range.startColumn + i))
+            }
 
 
             // editor.render();
@@ -157,11 +175,6 @@ require(['vs/editor/editor.main'], function() {
                 editor.getOffsetForColumn(this.range.startLineNumber, this.range.startColumn + this.w.split('(')[0].length);
 
 
-
-
-
-            div.textContent = 'aa';
-
             div.style.pointerEvents = 'none';
 
 
@@ -175,9 +188,8 @@ require(['vs/editor/editor.main'], function() {
                     }
 
                     .background {
-                        background: #eee
+                        background: #eee;
                     }
-
 
                     .last {
                             border-radius: 0 4px 4px 0;
@@ -185,7 +197,7 @@ require(['vs/editor/editor.main'], function() {
 
                 </style>
 
-                <div style="display: flex; color: #fff;box-shadow: 0 1px 3px #ddd;border-radius: 4px">
+                <div style="display: flex; color: #fff; box-shadow: 0 1px 3px #000; border-radius: 4px;">
 
                     <div apply-font-info style="pointer-events: auto; border-radius: 4px 0 0 4px;background: #080;color:#fff; text-align: center; width: ${dropdownWidth}px">▼</div>
                     <div apply-font-info style="pointer-events: auto; background: #39bf4b;text-align: center; width: ${textWidth}px">${name}</div>
@@ -345,18 +357,36 @@ require(['vs/editor/editor.main'], function() {
 
 
     editor.onDidChangeCursorPosition((e) => {
-        // console.info(e);
+
+        const { lineNumber, column } = e.position;
+
+        DropdownWidget.collection.forEach((widget) => {
+
+            if (lineNumber !== widget.range.startLineNumber) return;
+
+            if (widget.range.startColumn <= column && column < widget.range.endColumn) {
+
+                /*
+
+                editor.setPosition({
+                    lineNumber: e.position.lineNumber,
+                    column: widget.range.startColumn - 1
+                });
+                */
+
+            }
+
+        });
+
+
+
+        console.info('cursor', e);
     });
 
 
     const config = editor.getConfiguration();
 
     console.log(config);
-
-
-
-
-
 
 
     const model = editor.getModel();
